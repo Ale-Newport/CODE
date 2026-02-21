@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Code Entry</title>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #111827;
+      --panel: rgba(255, 255, 255, 0.08);
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.72);
+      --ok: #22c55e;
+      --ok-text: #052e16;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg1), var(--bg2));
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 390px; /* mobile-friendly width */
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      padding: 18px 16px 22px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: 0.2px;
+    }
+
+    .header p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .display {
+      height: 62px;
+      border-radius: 16px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      font-size: 28px;
+      letter-spacing: 8px;
+      font-weight: 600;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .message {
+      min-height: 60px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.35;
+      font-size: 14px;
+      color: #e5e7eb;
+      margin-bottom: 16px;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .key {
+      border: none;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+      min-height: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: inset 0 -2px 0 rgba(255,255,255,0.05);
+      transition: transform 0.08s ease, background 0.15s ease;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .key:active {
+      transform: scale(0.96);
+      background: rgba(255, 255, 255, 0.20);
+    }
+
+    .digit {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 500;
+    }
+
+    .letters {
+      margin-top: 3px;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.72);
+      min-height: 12px;
+      text-transform: uppercase;
+    }
+
+    .action {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .key.clear {
+      background: rgba(239, 68, 68, 0.18);
+    }
+
+    .key.clear:active {
+      background: rgba(239, 68, 68, 0.28);
+    }
+
+    .key.ok {
+      background: var(--ok);
+      color: var(--ok-text);
+    }
+
+    .key.ok .letters {
+      color: rgba(5, 46, 22, 0.65);
+      font-weight: 700;
+      letter-spacing: 0.6px;
+    }
+
+    .key.ok:active {
+      background: #16a34a;
+    }
+
+    .footer {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    @media (max-width: 360px) {
+      .app {
+        border-radius: 22px;
+        padding: 14px 12px 18px;
+      }
+
+      .key {
+        min-height: 64px;
+      }
+
+      .digit {
+        font-size: 27px;
+      }
+
+      .display {
+        font-size: 24px;
+        letter-spacing: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" role="application" aria-label="Code entry keypad">
+    <div class="header">
+      <h1>Enter Access Code</h1>
+      <p>Use the keypad below to enter your code</p>
+    </div>
+
+    <div id="display" class="display" aria-live="polite">••••</div>
+
+    <div id="message" class="message" aria-live="polite">
+      Enter a code and tap OK
+    </div>
+
+    <div class="keypad">
+      <button class="key" onclick="pressDigit('1')" aria-label="1">
+        <span class="digit">1</span>
+        <span class="letters">&nbsp;</span>
+      </button>
+
+      <button class="key" onclick="pressDigit('2')" aria-label="2">
+        <span class="digit">2</span>
+        <span class="letters">ABC</span>
+      </button>
+
+      <button class="key" onclick="pressDigit('3')" aria-label="3">
+        <span class="digit">3</span>
+        <span class="letters">DEF</span>
+      </button>
+
+      <button class="key" onclick="pressDigit('4')" aria-label="4">
+        <span class="digit">4</span>
+        <span class="letters">GHI</span>
+      </button>
+
+      <button class="key" onclick="pressDigit('5')" aria-label="5">
+        <span class="digit">5</span>
+        <span class="letters">JKL</span>
+      </button>
+
+      <button class="key" onclick="pressDigit('6')" aria-label="6">
+        <span class="digit">6</span>
+        <span class="letters">MNO</span>
+      </button>
+
+      <button class="key" onclick="pressDigit('7')" aria-label="7">
+        <span class="digit">7</span>
+        <span class="letters">PQRS</span>
+      </button>
+
+      <button class="key" onclick="pressDigit('8')" aria-label="8">
+        <span class="digit">8</span>
+        <span class="letters">TUV</span>
+      </button>
+
+      <button class="key" onclick="pressDigit('9')" aria-label="9">
+        <span class="digit">9</span>
+        <span class="letters">WXYZ</span>
+      </button>
+
+      <button class="key clear" onclick="clearCode()" aria-label="Clear code">
+        <span class="action">Clear</span>
+        <span class="letters">RESET</span>
+      </button>
+
+      <button class="key" onclick="pressDigit('0')" aria-label="0">
+        <span class="digit">0</span>
+        <span class="letters">+</span>
+      </button>
+
+      <button class="key ok" onclick="checkCode()" aria-label="Confirm code">
+        <span class="action">OK</span>
+        <span class="letters">ENTER</span>
+      </button>
+    </div>
+
+    <div class="footer">Example codes: 1234, 0000, 2026</div>
+  </main>
+
+  <script>
+    let code = "";
+    const maxLength = 6;
+
+    // Edit these codes and phrases as needed
+    const codeMessages = {
+      "1234": "Welcome! This is your secret message.",
+      "0000": "Basic access granted.",
+      "2026": "Great things are coming. Keep going!",
+      "1111": "Test mode activated.",
+      "4321": "Correct code. Alternate message unlocked."
+    };
+
+    function updateDisplay() {
+      const display = document.getElementById("display");
+      display.textContent = code.length ? code : "••••";
+    }
+
+    function setMessage(text) {
+      document.getElementById("message").textContent = text;
+    }
+
+    function pressDigit(digit) {
+      if (code.length < maxLength) {
+        code += digit;
+        updateDisplay();
+      }
+    }
+
+    function clearCode() {
+      code = "";
+      updateDisplay();
+      setMessage("Enter a code and tap OK");
+    }
+
+    function checkCode() {
+      if (code.length === 0) {
+        setMessage("Please enter a code first.");
+        return;
+      }
+
+      if (Object.prototype.hasOwnProperty.call(codeMessages, code)) {
+        setMessage(codeMessages[code]);
+      } else {
+        setMessage("Incorrect code. Please try again.");
+      }
+    }
+
+    // Optional physical keyboard support (desktop)
+    document.addEventListener("keydown", (e) => {
+      if (/^[0-9]$/.test(e.key)) {
+        pressDigit(e.key);
+      } else if (e.key === "Enter") {
+        checkCode();
+      } else if (e.key === "Backspace") {
+        code = code.slice(0, -1);
+        updateDisplay();
+      } else if (e.key.toLowerCase() === "c") {
+        clearCode();
+      }
+    });
+  </script>
+</body>
+</html>
